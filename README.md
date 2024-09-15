@@ -1,33 +1,29 @@
-# Boilerplate for nginx with Let’s Encrypt on docker-compose
+# docker-compose에서 Let's Encrypt를 사용한 nginx 보일러플레이트
 
-> This repository is accompanied by a [step-by-step guide on how to
-set up nginx and Let’s Encrypt with Docker](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71).
+> 이 저장소는 [Docker를 사용하여 5분 만에 nginx와 Let's Encrypt를 설정하는 방법에 대한 단계별 가이드](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)와 함께 제공됩니다.
 
-`init-letsencrypt.sh` fetches and ensures the renewal of a Let’s
-Encrypt certificate for one or multiple domains in a docker-compose
-setup with nginx.
-This is useful when you need to set up nginx as a reverse proxy for an
-application.
+`init-letsencrypt.sh`는 docker-compose 설정에서 nginx와 함께 사용할 하나 또는 여러 도메인에 대한 Let's Encrypt 인증서를 가져오고 갱신을 보장합니다.
+이는 애플리케이션의 리버스 프록시로 nginx를 설정해야 할 때 유용합니다.
 
-## Installation
-1. [Install docker-compose](https://docs.docker.com/compose/install/#install-compose).
+## 설치
+1. [docker-compose 설치](https://docs.docker.com/compose/install/#install-compose).
 
-2. Clone this repository: `git clone https://github.com/wmnnd/nginx-certbot.git .`
+2. 이 저장소 클론: `git clone https://github.com/wmnnd/nginx-certbot.git .`
 
-3. Modify configuration:
-- Add domains and email addresses to init-letsencrypt.sh
-- Replace all occurrences of example.org with primary domain (the first one you added to init-letsencrypt.sh) in data/nginx/app.conf
+3. 설정 수정:
+- init-letsencrypt.sh에 도메인과 이메일 주소 추가
+- data/nginx/app.conf에서 example.org의 모든 항목을 주 도메인으로 교체 (init-letsencrypt.sh에 추가한 첫 번째 도메인)
 
-4. Run the init script:
+4. 초기화 스크립트 실행:
 
         ./init-letsencrypt.sh
 
-5. Run the server:
+5. 서버 실행:
 
-        docker-compose up
+        docker-compose up -d
 
-## Got questions?
-Feel free to post questions in the comment section of the [accompanying guide](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)
+## 질문이 있으신가요?
+[관련 가이드](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71)의 댓글 섹션에 자유롭게 질문을 올려주세요.
 
-## License
-All code in this repository is licensed under the terms of the `MIT License`. For further information please refer to the `LICENSE` file.
+## 라이선스
+이 저장소의 모든 코드는 `MIT 라이선스` 조건에 따라 라이선스가 부여됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
