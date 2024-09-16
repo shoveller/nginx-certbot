@@ -1,16 +1,46 @@
 #!/bin/bash
 
+# 인자 확인
+if [ "$#" -lt 1 ]; then
+    echo "사용법: $0 <도메인> [이메일]"
+    exit 1
+fi
+
+# docker-compose가 설치되어 있는지 확인
 if ! [ -x "$(command -v docker-compose)" ]; then
   echo 'Error: docker-compose is not installed.' >&2
   exit 1
 fi
 
-domains=(example.org www.example.org)
+# 도메인 설정
+domain=$1
+domains=("$domain" "www.$domain")
 rsa_key_size=4096
 data_path="./data/certbot"
-email="" # Adding a valid address is strongly recommended
-staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
+email="${2:-""}" # 두 번째 인자가 없으면 빈 문자열 사용
+staging=0 # 테스트 중이라면 1로 설정하여 요청 제한 방지
 
+# app.conf 파일 생성 함수
+generate_app_conf() {
+    local template_file="./data/nginx/conf.d/app.conf.template"
+    local conf_file="./data/nginx/conf.d/app.conf"
+    
+    # 템플릿 파일이 없으면 에러 메시지 출력 후 종료
+    if [ ! -f "$template_file" ]; then
+        echo "오류: $template_file 파일을 찾을 수 없습니다."
+        return 1
+    fi
+    
+    # 템플릿을 기반으로 app.conf 파일 생성
+    sed "s/\${DOMAIN_NAME}/$domain/g" "$template_file" > "$conf_file"
+    
+    echo "app.conf 파일이 $domain 도메인으로 생성되었습니다."
+}
+
+# app.conf 파일 생성 함수 호출
+generate_app_conf
+
+# 기존 데이터가 있는 경우 사용자에게 확인
 if [ -d "$data_path" ]; then
   read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
   if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
@@ -18,7 +48,7 @@ if [ -d "$data_path" ]; then
   fi
 fi
 
-
+# 필요한 TLS 매개변수 다운로드
 if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
   echo "### Downloading recommended TLS parameters ..."
   mkdir -p "$data_path/conf"
@@ -27,6 +57,7 @@ if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/
   echo
 fi
 
+# 임시 인증서 생성
 echo "### Creating dummy certificate for $domains ..."
 path="/etc/letsencrypt/live/$domains"
 mkdir -p "$data_path/conf/live/$domains"
@@ -37,11 +68,12 @@ docker-compose run --rm --entrypoint "\
     -subj '/CN=localhost'" certbot
 echo
 
-
+# nginx 시작
 echo "### Starting nginx ..."
 docker-compose up --force-recreate -d nginx
 echo
 
+# 임시 인증서 삭제
 echo "### Deleting dummy certificate for $domains ..."
 docker-compose run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/live/$domains && \
@@ -49,23 +81,24 @@ docker-compose run --rm --entrypoint "\
   rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
 echo
 
-
+# Let's Encrypt 인증서 요청
 echo "### Requesting Let's Encrypt certificate for $domains ..."
-#Join $domains to -d args
+# 도메인 인자 구성
 domain_args=""
 for domain in "${domains[@]}"; do
   domain_args="$domain_args -d $domain"
 done
 
-# Select appropriate email arg
+# 이메일 인자 선택
 case "$email" in
   "") email_arg="--register-unsafely-without-email" ;;
   *) email_arg="--email $email" ;;
 esac
 
-# Enable staging mode if needed
+# 필요한 경우 스테이징 모드 활성화
 if [ $staging != "0" ]; then staging_arg="--staging"; fi
 
+# certbot을 사용하여 인증서 발급
 docker-compose run --rm --entrypoint "\
   certbot certonly --webroot -w /var/www/certbot \
     $staging_arg \
@@ -76,5 +109,6 @@ docker-compose run --rm --entrypoint "\
     --force-renewal" certbot
 echo
 
-echo "### Reloading nginx ..."
+# nginx 재로드
+echo "### Reloading nginx and updating domain..."
 docker-compose exec nginx nginx -s reload

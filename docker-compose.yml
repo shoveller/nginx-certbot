@@ -1,17 +1,19 @@
-version: '3'
-
+version: '3.9'
 services:
   nginx:
-    image: nginx:1.15-alpine
+    container_name: nginx-proxy
+    image: nginx:latest
     restart: unless-stopped
-    volumes:
-      - ./data/nginx:/etc/nginx/conf.d
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
     ports:
-      - "80:80"
-      - "443:443"
+    - 80:80
+    - 443:443
+    volumes:
+    - ./data/nginx/conf.d:/etc/nginx/conf.d //conf.d안에 ???.conf파일 설정을 nginx에 마운트
+    - ./data/certbot/conf:/etc/letsencrypt  //ssl 부분 certbot과 같은 폴더를 공유
+    - ./data/certbot/www:/var/www/certbot   //ssl 부분 certbot과 같은 폴더를 공유
+    - ./git/cube/cube/dist:/usr/share/nginx/html  //vue build 파일을 넣어줘야하는 부분이다.
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
   certbot:
     image: certbot/certbot
     restart: unless-stopped
