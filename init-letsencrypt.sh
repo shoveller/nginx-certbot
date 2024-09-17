@@ -20,25 +20,42 @@ data_path="./data/certbot"
 email="${2:-""}" # 두 번째 인자가 없으면 빈 문자열 사용
 staging=0 # 테스트 중이라면 1로 설정하여 요청 제한 방지
 
-# app.conf 파일 생성 함수
-generate_app_conf() {
-    local template_file="./data/nginx/conf.d/app.conf.template"
-    local conf_file="./data/nginx/conf.d/app.conf"
+# nginx-proxy 컨테이너 정지 및 삭제
+echo "### Stopping and removing nginx-proxy container..."
+docker stop nginx-proxy || true
+docker rm nginx-proxy || true
+
+# nginx-certbot 컨테이너 정지 및 삭제
+echo "### Stopping and removing nginx-certbot container..."
+docker stop nginx-certbot || true
+docker rm nginx-certbot || true
+
+# default.conf 파일 생성 함수
+generate_default_conf() {
+    local template_dir="./data/nginx/conf.d"
+    local template_file="$template_dir/default.conf.template"
+    local conf_file="$template_dir/default.conf"
     
+    # 디렉토리가 없으면 생성
+    if [ ! -d "$template_dir" ]; then
+        mkdir -p "$template_dir"
+        echo "$template_dir 디렉토리를 생성했습니다."
+    fi
+
     # 템플릿 파일이 없으면 에러 메시지 출력 후 종료
     if [ ! -f "$template_file" ]; then
         echo "오류: $template_file 파일을 찾을 수 없습니다."
         return 1
     fi
     
-    # 템플릿을 기반으로 app.conf 파일 생성
+    # 템플릿을 기반으로 default.conf 파일 생성
     sed "s/\${DOMAIN_NAME}/$domain/g" "$template_file" > "$conf_file"
     
-    echo "app.conf 파일이 $domain 도메인으로 생성되었습니다."
+    echo "default.conf 파일이 $domain 도메인으로 생성되었습니다."
 }
 
-# app.conf 파일 생성 함수 호출
-generate_app_conf
+# default.conf 파일 생성 함수 호출
+generate_default_conf
 
 # 기존 데이터가 있는 경우 사용자에게 확인
 if [ -d "$data_path" ]; then
