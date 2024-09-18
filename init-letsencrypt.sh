@@ -14,18 +14,19 @@ fi
 
 # 도메인 설정
 domain=$1
-domains=("$domain" "www.$domain")
+# domains=("$domain" "www.$domain")
+domains=("$domain")
 rsa_key_size=4096
 data_path="./data/certbot"
 email="${2:-""}" # 두 번째 인자가 없으면 빈 문자열 사용
 staging=0 # 테스트 중이라면 1로 설정하여 요청 제한 방지
 
-# nginx 컨테이너 정지 및 삭제
+# nginx-proxy 컨테이너 정지 및 삭제
 echo "### Stopping and removing nginx container..."
 docker stop nginx || true
 docker rm nginx || true
 
-# certbot 컨테이너 정지 및 삭제
+# nginx-certbot 컨테이너 정지 및 삭제
 echo "### Stopping and removing certbot container..."
 docker stop certbot || true
 docker rm certbot || true
