@@ -8,7 +8,7 @@
 ## 설치
 1. [docker-compose 설치](https://docs.docker.com/compose/install/#install-compose).
 
-2. 이 저장소 클론: `git clone https://github.com/wmnnd/nginx-certbot.git .`
+2. 이 저장소 클론: `git clone https://github.com/wmnnd/certbot.git .`
 
 3. 설정 수정:
 - init-letsencrypt.sh에 도메인과 이메일 주소 추가

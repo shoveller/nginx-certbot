@@ -22,15 +22,15 @@ set data_path=.\data\certbot
 if "%~2"=="" (set email=) else (set email=%~2)
 set staging=0
 
-REM nginx-proxy 컨테이너 정지 및 삭제
-echo ### Stopping and removing nginx-proxy container...
-docker stop nginx-proxy 2>nul
-docker rm nginx-proxy 2>nul
+REM nginx 컨테이너 정지 및 삭제
+echo ### Stopping and removing nginx container...
+docker stop nginx 2>nul
+docker rm nginx 2>nul
 
-REM nginx-certbot 컨테이너 정지 및 삭제
-echo ### Stopping and removing nginx-certbot container...
-docker stop nginx-certbot 2>nul
-docker rm nginx-certbot 2>nul
+REM certbot 컨테이너 정지 및 삭제
+echo ### Stopping and removing certbot container...
+docker stop certbot 2>nul
+docker rm certbot 2>nul
 
 REM default.conf 파일 생성 함수
 call :generate_default_conf
