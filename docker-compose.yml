@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   nginx:
-    container_name: nginx-proxy
+    container_name: nginx
     image: nginx:latest
     restart: unless-stopped
     ports:
@@ -15,7 +15,7 @@ services:
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
-    container_name: nginx-certbot
+    container_name: certbot
     image: certbot/certbot
     restart: unless-stopped
     volumes:
